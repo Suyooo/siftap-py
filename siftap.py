@@ -14,6 +14,7 @@ siftap_locs = {
     8: (1102, 409),
     9: (1140, 600)
 }
+siftap_holding = [False,False,False,False,False,False,False,False,False,False]
 siftap_reverse_coords = False
 
 siftap_shell = None
@@ -36,15 +37,24 @@ def touchevent(t,locid):
     p = p if not siftap_reverse_coords else (p[1],p[0])
     if t == "t":
         siftap_shell.stdin.write(bytes("d "+str(locid)+" "+str(p[1])+" "+str(p[0])+" 50\nc\nw 50\nu "+str(locid)+"\nc\n","utf-8"))
+        siftap_holding[locid] = False
     elif t == "h":
         siftap_shell.stdin.write(bytes("d "+str(locid)+" "+str(p[1])+" "+str(p[0])+" 50\nc\n","utf-8"))
+        siftap_holding[locid] = True
     elif t == "r":
         siftap_shell.stdin.write(bytes("u "+str(locid)+"\nc\n","utf-8"))
+        siftap_holding[locid] = False
     siftap_shell.stdin.flush()
 
 def tap(locid): touchevent("t",locid)
-def hold(locid): touchevent("h",locid)
-def release(locid): touchevent("r",locid)
+def hold(locid):
+    global siftap_holding
+    if siftap_holding[locid]: return
+    touchevent("h",locid)
+def release(locid):
+    global siftap_holding
+    if not siftap_holding[locid]: return
+    touchevent("r",locid)
 
 init()
 
